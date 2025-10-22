@@ -1,53 +1,62 @@
 package br.com.aegis.stock.service;
 
+import br.com.aegis.stock.dto.ProductResponseDTO;
 import br.com.aegis.stock.model.Product;
 import br.com.aegis.stock.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.beans.Transient;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final CategoryService categoryService;
 
 
     @Autowired
-    public ProductServiceImpl(ProductRepository productRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, CategoryService categoryService) {
 
         this.productRepository = productRepository;
+        this.categoryService = categoryService;
     }
 
 
     @Override
-    public List<Product> findAllProducts() {
-
-        return productRepository.findAll();
+    // @Transactional(readOnly = true)
+    public List<ProductResponseDTO> findAllProducts() {
+        return productRepository.findAll().stream()
+                .map(ProductResponseDTO::new).collect(Collectors.toList());
     }
 
     @Override
-    public Product findProductById(Long id) {
+    // @Transactional(readOnly)
+    public ProductResponseDTO findProductById(Long id) {
 
-        return productRepository.findById(id)
-                // If we don't have a product, we'll throw an exception
-                .orElseThrow(() -> new RuntimeException("Did not find product with id " + id));
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Did not find product id " + id));
+
+        return new ProductResponseDTO(product);
     }
 
     @Override
     @Transactional
-    public Product save(Product product) {
+    public ProductResponseDTO create(ProductResponseDTO productResponseDTO) {
+        return null;
+    }
 
-        return productRepository.save(product);
+    @Override
+    @Transactional
+    public ProductResponseDTO update(Long id, ProductResponseDTO productResponseDTO) {
+        return null;
     }
 
     @Override
     @Transactional
     public void deleteById(Long id) {
 
-        productRepository.deleteById(id);
     }
 }

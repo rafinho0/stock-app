@@ -1,11 +1,18 @@
 package br.com.aegis.stock.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Objects;
 
 @Entity
 @Table(name = "category")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Category {
 
     @Column(name = "id")
@@ -16,63 +23,14 @@ public class Category {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "product",
+    @OneToMany(mappedBy = "category",
             cascade =
                 {CascadeType.DETACH,
                 CascadeType.MERGE,
                 CascadeType.PERSIST,
-                CascadeType.REFRESH}
+                CascadeType.REFRESH},
+            fetch = FetchType.EAGER
     )
-    @JoinColumn(name = "product_id")
-    private Product product;
+    private List<Product> product;
 
-
-    public Category() {}
-
-    public Category(String name) {
-        this.name = name;
-    }
-
-    public Category(String name, Product product) {
-        this.name = name;
-        this.product = product;
-    }
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Category category = (Category) o;
-        return id == category.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
 }
