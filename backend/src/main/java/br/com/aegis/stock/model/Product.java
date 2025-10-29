@@ -2,6 +2,7 @@ package br.com.aegis.stock.model;
 
 import br.com.aegis.stock.dto.ProductResponseDTO;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,18 +17,20 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class Product {
 
-    @Column(name = "id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "name", nullable = false)
+    @NotNull
     private String name;
 
     @Column(name = "img_url", nullable = false)
     private String imgURL;
 
     @Column(name = "price", nullable = false)
+    @NotNull
     private BigDecimal price;
 
     @Column(name = "long_description")

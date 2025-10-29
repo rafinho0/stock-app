@@ -1,12 +1,12 @@
 package br.com.aegis.stock.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Table(name = "category")
@@ -15,12 +15,13 @@ import java.util.Objects;
 @AllArgsConstructor
 public class Category {
 
-    @Column(name = "id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "name", nullable = false)
+    @NotNull
     private String name;
 
     @OneToMany(mappedBy = "category",
