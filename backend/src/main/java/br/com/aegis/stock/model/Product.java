@@ -36,13 +36,18 @@ public class Product {
     @Column(name = "long_description")
     private String longDescription;
 
+    @Column(name = "stock_quantity")
+    @NotNull
+    private Integer stockQuantity = 0;
+
     @ManyToOne(cascade =
                     {CascadeType.DETACH,
                     CascadeType.MERGE,
                     CascadeType.PERSIST,
                     CascadeType.REFRESH},
-               fetch = FetchType.EAGER)
-    @JoinColumn(name = "category_id", nullable = false)
+               fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    @NotNull
     private Category category;
 
 

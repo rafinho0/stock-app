@@ -5,13 +5,14 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "stock_transaction")
 @Data
-@NotNull
+@NoArgsConstructor
 @AllArgsConstructor
 public class StockTransaction {
 
@@ -29,6 +30,7 @@ public class StockTransaction {
     @JoinColumn(name = "user_id", nullable = false)
     @NotNull
     private User user;
+
 
     /*
         This is the enum that we created for Entry and Out
@@ -49,4 +51,6 @@ public class StockTransaction {
 
     @Column(name = "observation", length = 250)
     private String observation;
+
+
 }

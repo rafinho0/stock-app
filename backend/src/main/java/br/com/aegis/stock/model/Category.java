@@ -30,7 +30,7 @@ public class Category {
                 CascadeType.MERGE,
                 CascadeType.PERSIST,
                 CascadeType.REFRESH},
-            fetch = FetchType.EAGER
+            fetch = FetchType.LAZY
     )
     private List<Product> product;
 
