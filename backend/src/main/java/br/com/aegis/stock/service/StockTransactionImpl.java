@@ -3,6 +3,9 @@ package br.com.aegis.stock.service;
 import br.com.aegis.stock.dto.StockTransactionRequestDTO;
 import br.com.aegis.stock.dto.StockTransactionResponseDTO;
 import br.com.aegis.stock.enums.TransactionType;
+import br.com.aegis.stock.exception.GlobalExceptionHandler;
+import br.com.aegis.stock.exception.InsufficientStockException;
+import br.com.aegis.stock.exception.ResourceNotFoundException;
 import br.com.aegis.stock.model.Product;
 import br.com.aegis.stock.model.StockTransaction;
 import br.com.aegis.stock.model.User;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StockTransactionImpl implements StockTransactionService {
@@ -24,7 +28,9 @@ public class StockTransactionImpl implements StockTransactionService {
     private final UserRepository userRepository;
 
     @Autowired
-    public StockTransactionImpl(StockTransactionRepository transactionRepository, ProductRepository productRepository, UserRepository userRepository) {
+    public StockTransactionImpl(StockTransactionRepository transactionRepository,
+                                ProductRepository productRepository,
+                                UserRepository userRepository) {
         this.transactionRepository = transactionRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
@@ -34,20 +40,23 @@ public class StockTransactionImpl implements StockTransactionService {
     @Transactional
     public StockTransactionResponseDTO registerNewTransaction(StockTransactionRequestDTO requestDTO) {
 
+
+        // Just checking if the product and user is valid
         Product product = productRepository.findById(requestDTO.getProductID())
-                .orElseThrow(() -> new RuntimeException("Product id not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "id", id));
 
         User user = userRepository.findById(requestDTO.getUserID())
-                .orElseThrow(() -> new RuntimeException("User id not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
 
 
-
+        // if the transaction is an output and the stock quantity is less than 0 we throw an error
         if (requestDTO.getType() == TransactionType.OUT && product.getStockQuantity() < 0) {
-            throw new RuntimeException("Insufficient stock for this transaction");
+            throw new InsufficientStockException("Not enough stock to output. Current stock quantity: " + product.getStockQuantity());
         }
 
         StockTransaction transaction = new StockTransaction();
 
+        // right here we instantiate the fields in the stock transaction entity
         transaction.setProduct(product);
         transaction.setUser(user);
         transaction.setType(requestDTO.getType());
@@ -55,6 +64,7 @@ public class StockTransactionImpl implements StockTransactionService {
         transaction.setObservation(requestDTO.getObservation());
         transaction.setDateOfTransaction(LocalDateTime.now());
 
+        // checking if we're trying to input or output products
         Integer newStockQuantity = product.getStockQuantity();
         if (requestDTO.getType() == TransactionType.ENTRY) {
             newStockQuantity += requestDTO.getQuantity();
@@ -63,6 +73,7 @@ public class StockTransactionImpl implements StockTransactionService {
         }
         product.setStockQuantity(newStockQuantity);
 
+        // persisting product and stockTransaction
         productRepository.save(product);
         StockTransaction savedTransaction = transactionRepository.save(transaction);
 
@@ -70,12 +81,18 @@ public class StockTransactionImpl implements StockTransactionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<StockTransactionResponseDTO> findAllTransactions() {
-        return List.of();
+        return transactionRepository.findAll().stream()
+                .map(StockTransactionResponseDTO::new)
+                .collect(Collectors.toList());
     }
 
     @Override
     public StockTransactionResponseDTO findTransactionById(Long id) {
-        return null;
+        StockTransaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Stock", "id", id));
+
+        return new StockTransactionResponseDTO(transaction);
     }
 }

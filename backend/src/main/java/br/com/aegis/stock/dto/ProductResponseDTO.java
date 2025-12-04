@@ -23,6 +23,7 @@ public class ProductResponseDTO {
     public ProductResponseDTO(Product product) {
         BeanUtils.copyProperties(product, this);
 
+        
         if (product.getCategory() != null) {
             this.categoryId = product.getCategory().getId();
             this.categoryName = product.getCategory().getName();

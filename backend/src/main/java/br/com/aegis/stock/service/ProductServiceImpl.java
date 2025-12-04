@@ -1,9 +1,11 @@
 package br.com.aegis.stock.service;
 
 import br.com.aegis.stock.dto.ProductResponseDTO;
+import br.com.aegis.stock.model.Category;
 import br.com.aegis.stock.model.Product;
 import br.com.aegis.stock.repository.ProductRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,24 +44,60 @@ public class ProductServiceImpl implements ProductService {
         return new ProductResponseDTO(product);
     }
 
+    @Override
+    public Product findProductEntityById(Long id) {
+
+        return productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product"));
+    }
+
     /*
         Will add the implementation later
     */
     @Override
     @Transactional
     public ProductResponseDTO create(ProductResponseDTO productResponseDTO) {
-        return null;
+
+        Category category = categoryService.findCategoryById(productResponseDTO.getCategoryId());
+
+        Product product = new Product();
+
+        BeanUtils.copyProperties(productResponseDTO, product);
+
+        product.setCategory(category);
+
+        Product savedProduct = productRepository.save(product);
+
+        return new ProductResponseDTO(savedProduct);
     }
 
     @Override
     @Transactional
     public ProductResponseDTO update(Long id, ProductResponseDTO productResponseDTO) {
-        return null;
+
+        Product existingProduct = findProductEntityById(id);
+
+        Category newCategory = categoryService.findCategoryById(productResponseDTO.getCategoryId());
+
+        existingProduct.setName(productResponseDTO.getName());
+        existingProduct.setLongDescription(productResponseDTO.getLongDescription());
+        existingProduct.setPrice(productResponseDTO.getPrice());
+
+        existingProduct.setCategory(newCategory);
+
+        Product updateProduct = productRepository.save(existingProduct);
+
+        return new ProductResponseDTO(updateProduct);
     }
 
     @Override
     @Transactional
     public void deleteById(Long id) {
 
+        if(!productRepository.existsById(id)) {
+            throw new RuntimeException("Can't find product");
+        }
+
+        productRepository.deleteById(id);
     }
 }
